@@ -10,7 +10,7 @@ def run_scrapper(script_name):
         print(f"Executant {script_path}...", file=sys.stderr)  # Depuració
         
         result = subprocess.run(
-            ["python", script_path],
+            ["python3", script_path],
             capture_output=True,
             text=True
         )
@@ -33,4 +33,5 @@ if __name__ == "__main__":
             print(f"Error processant {scrapper}: {e}", file=sys.stderr)  # Depuració
             data[scrapper.replace(".py", "")] = {"error": str(e)}
     result = data;
-    print(json.dumps(data))
+    print(json.dumps(data, ensure_ascii=False))  # Evita problemes d'encoding
+
