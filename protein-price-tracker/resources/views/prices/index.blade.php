@@ -17,7 +17,7 @@
                     <h2 class="text-xl font-semibold">{{ $price->store }}</h2>
                     <p class="text-gray-700 mt-2">Preu: {{ $price->price }}€</p>
                     <p class="text-gray-700">Descompte: {{ $price->discount }}%</p>
-                    <p class="text-sm text-gray-500 mt-4">Actualitzat: {{ $price->created_at->diffForHumans() }}</p>
+                    <p class="text-sm text-gray-500 mt-4">Actualitzat: {{ $price->updated_at->diffForHumans() }}</p>
                 </div>
             @endforeach
         </div>

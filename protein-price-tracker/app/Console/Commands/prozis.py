@@ -4,18 +4,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime  # Nuevo: para el timestamp
 import json
 
 def get_prozis_price():
-    # Configura el driver amb ChromeDriverManager
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
     
     try:
-        # Obre la pàgina del producte
         driver.get("https://www.prozis.com/es/es/prozis/100-real-whey-protein-1000-g")
         
-        # Acceptar cookies (si existeix)
+        # Acceptar cookies
         try:
             cookie_btn = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"))
@@ -24,34 +23,41 @@ def get_prozis_price():
         except Exception as e:
             print(f"No s'ha pogut acceptar cookies: {e}")
         
-        # Esperar a que carregui el preu
+        # Extraer precio
         price_element = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "p.final-price"))
         )
         
-        # Obtenir el preu de l'atribut data-qa
+        # Procesar precio
         price_text = price_element.get_attribute("data-qa").replace('€', '').strip()
+        current_price = float(price_text)
         
-        # Verificar que el preu no estigui buit
-        if not price_text:
-            raise ValueError("El preu està buit.")
+        # Generar entrada histórica
+        timestamp = datetime.now().isoformat()  # Fecha/hora en formato ISO
         
         return {
             "store": "Prozis",
-            "price": float(price_text),
-            "discount": 25  # Exemple: Calcular descompte real comparant amb preu original
+            "current_price": current_price,  # Cambiado de "price" a "current_price"
+            "discount": 25,
+            "price_history": [  # Nuevo campo para el histórico
+                {
+                    "price": current_price,
+                    "discount": 25,
+                    "timestamp": timestamp
+                }
+            ]
         }
     
     except Exception as e:
         print(f"Error durant el scraping: {e}")
         return {
             "store": "Prozis",
-            "error": str(e)  # Retorna l'error com a part del JSON
+            "error": str(e)
         }
     
     finally:
-        driver.quit()  # Assegura't que el driver es tanqui sempre
+        driver.quit()
 
 if __name__ == "__main__":
     result = get_prozis_price()
-    print(json.dumps(result))  # Imprimeix el resultat
+    print(json.dumps(result, ensure_ascii=False))  # Añadido ensure_ascii para caracteres especiales
