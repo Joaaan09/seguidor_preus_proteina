@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Controllers/PriceController.php
 namespace App\Http\Controllers;
 
 use App\Models\Price;
@@ -10,7 +9,20 @@ class PriceController extends Controller
 {
     public function index()
     {
-        $prices = Price::orderBy('created_at', 'desc')->get();
-        return view('prices.index', compact('prices'));
+        // Obtener precios ordenados y asegurar que el histórico es un array
+        $prices = Price::orderBy('created_at', 'desc')
+                    ->get()
+                    ->each(function ($price) {
+                        // Convertir price_history a array si es necesario
+                        if (is_string($price->price_history)) {
+                            $price->price_history = json_decode($price->price_history, true);
+                        }
+                        return $price;
+                    });
+        
+        return view('prices.index', [
+            'prices' => $prices,
+            'stores' => $prices->pluck('store')->unique() // Para posibles filtros futuros
+        ]);
     }
 }
